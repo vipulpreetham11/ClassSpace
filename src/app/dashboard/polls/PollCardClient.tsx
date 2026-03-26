@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
-
-import type { Role } from "@prisma/client"
 import { formatDate } from "@/lib/formatDate";
+
+type Role = "STUDENT" | "ADMIN" | "PENDING"
 
 interface PollOption {
   id: string

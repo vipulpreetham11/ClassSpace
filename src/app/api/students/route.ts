@@ -2,7 +2,8 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/db"
 import { NextResponse } from "next/server"
-import type { Role } from "@prisma/client"
+
+type Role = "STUDENT" | "ADMIN" | "PENDING"
 
 type StudentUserItem = {
   id: string
