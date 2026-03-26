@@ -53,7 +53,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: "Poll ended" }, { status: 400 })
     }
 
-    const optionExists = poll.options.some(o => o.id === optionId)
+    const optionExists = poll.options.some((o: { id: string }) => o.id === optionId)
     if (!optionExists) return NextResponse.json({ error: "Invalid option" }, { status: 400 })
 
     try {
