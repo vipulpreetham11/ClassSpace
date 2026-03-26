@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
+// Prisma namespace not needed in Prisma 7
 type OptionVotesResponse = {
   id: string
   text: string
@@ -65,11 +65,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           pollOptionId: optionId,
         },
       })
-    } catch (err: unknown) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-        return NextResponse.json({ error: "Already voted" }, { status: 400 })
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        (error as { code: string }).code === 'P2002'
+      ) {
+        return NextResponse.json(
+          { error: 'Already voted' },
+          { status: 400 }
+        )
       }
-      return NextResponse.json({ error: "Failed to vote" }, { status: 500 })
+      return NextResponse.json(
+        { error: 'Failed to vote' },
+        { status: 500 }
+      )
     }
 
     const updated = await prisma.poll.findUnique({
