@@ -26,8 +26,9 @@ export function PendingConfessionClient({ id, content, createdAt, user }: Pendin
       });
       if (!res.ok) throw new Error("Action failed");
       router.refresh();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(message);
       alert("Failed to perform action");
     } finally {
       setIsLoading(false);

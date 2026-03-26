@@ -31,8 +31,9 @@ export function NoticeCard({ notice, isAdmin }: NoticeCardProps) {
       const res = await fetch(`/api/notices/${notice.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete notice");
       router.refresh();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(message);
       setIsDeleting(false);
     }
   };

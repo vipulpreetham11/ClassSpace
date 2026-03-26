@@ -25,8 +25,9 @@ export function CommentBoxClient({ discussionId }: { discussionId: string }) {
       
       setContent("");
       router.refresh();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(message);
       alert("Failed to submit comment");
     } finally {
       setStatus("idle");
@@ -70,8 +71,9 @@ export function DeleteDiscussionClient({ id }: { id: string }) {
       if (!res.ok) throw new Error("Failed to delete");
       router.push("/dashboard/discussions");
       router.refresh();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(message);
       setIsDeleting(false);
       alert("Failed to delete discussion");
     }

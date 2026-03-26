@@ -59,8 +59,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Failed to update confession" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error(message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

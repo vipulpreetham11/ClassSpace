@@ -19,8 +19,9 @@ export async function GET() {
 
     return NextResponse.json(notes);
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error(message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -51,7 +52,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json(note);
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error(message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

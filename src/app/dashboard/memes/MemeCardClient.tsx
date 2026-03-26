@@ -36,8 +36,9 @@ export function MemeCardClient({ meme, isAdmin, currentUserId }: MemeCardClientP
     try {
       const res = await fetch(`/api/memes/${meme.id}`, { method: "DELETE" });
       if (res.ok) router.refresh();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(message);
       setIsDeleting(false);
     }
   };
@@ -50,8 +51,9 @@ export function MemeCardClient({ meme, isAdmin, currentUserId }: MemeCardClientP
         body: JSON.stringify({ action: "react", type })
       });
       if (res.ok) router.refresh();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(message);
     }
   };
 

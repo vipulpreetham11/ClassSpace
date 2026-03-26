@@ -26,8 +26,9 @@ export function ConfessionCardClient({ id, content, createdAt, reactions, isAdmi
       const res = await fetch(`/api/confessions/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed");
       router.refresh();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(message);
       setIsDeleting(false);
     }
   };
@@ -40,8 +41,9 @@ export function ConfessionCardClient({ id, content, createdAt, reactions, isAdmi
         body: JSON.stringify({ action: "react", type })
       });
       if (res.ok) router.refresh();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(message);
     }
   };
 

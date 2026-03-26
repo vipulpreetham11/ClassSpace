@@ -46,7 +46,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json(discussion, { status: 201 });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Failed to create discussion" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Internal server error";
+    console.error(message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -66,6 +66,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         },
       })
     } catch (error) {
+      const message = error instanceof Error ? error.message : "Internal server error"
       if (
         error instanceof Error &&
         'code' in error &&
@@ -76,10 +77,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           { status: 400 }
         )
       }
-      return NextResponse.json(
-        { error: 'Failed to vote' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: message }, { status: 500 })
     }
 
     const updated = await prisma.poll.findUnique({

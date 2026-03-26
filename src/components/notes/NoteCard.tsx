@@ -51,8 +51,9 @@ export function NoteCard({ note, isBookmarked, isAdmin }: NoteCardProps) {
       });
       setDownloads(d => d + 1);
       window.open(note.fileUrl, "_blank");
-    } catch (e) {
-      console.error("Failed to increment download count", e);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error("Failed to increment download count", message);
     } finally {
       setIsDownloading(false);
     }
@@ -85,8 +86,9 @@ export function NoteCard({ note, isBookmarked, isAdmin }: NoteCardProps) {
       const res = await fetch(`/api/notes/${note.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
       router.refresh();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(message);
       setIsDeleting(false);
     }
   };

@@ -50,8 +50,9 @@ export function PollCardClient({ poll, isAdmin, hasVoted, userRole, userVoteOpti
         body: JSON.stringify({ optionId }),
       });
       if (res.ok) router.refresh();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(message);
     } finally {
       setIsVoting(false);
     }
@@ -63,8 +64,9 @@ export function PollCardClient({ poll, isAdmin, hasVoted, userRole, userVoteOpti
     try {
       const res = await fetch(`/api/polls/${poll.id}`, { method: "DELETE" });
       if (res.ok) router.refresh();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(message);
     } finally {
       setIsDeleting(false);
     }
