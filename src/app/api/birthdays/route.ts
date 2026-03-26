@@ -41,7 +41,9 @@ export async function GET() {
         if (next < now) next.setFullYear(now.getFullYear() + 1)
         return { birthday: b, nextTime: next.getTime() }
       })
-      .sort((a, b) => a.nextTime - b.nextTime)
+      .sort((a: { nextTime: number }, b: { nextTime: number }) =>
+        a.nextTime - b.nextTime
+      )
       .map(({ birthday }) => ({
         id: birthday.id,
         userId: birthday.userId,
