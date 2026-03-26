@@ -44,7 +44,7 @@ export async function GET() {
       .sort((a: { nextTime: number }, b: { nextTime: number }) =>
         a.nextTime - b.nextTime
       )
-      .map(({ birthday }) => ({
+      .map(({ birthday }: { birthday: (typeof birthdays)[number] }) => ({
         id: birthday.id,
         userId: birthday.userId,
         date: birthday.date.toISOString(),
