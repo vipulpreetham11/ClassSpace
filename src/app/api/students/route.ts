@@ -44,7 +44,15 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     })
 
-    const response: StudentUserItem[] = users.map(u => ({
+    const response: StudentUserItem[] = users.map((u: {
+      id: string;
+      name: string | null;
+      email: string | null;
+      rollNumber: string | null;
+      branch: string | null;
+      year: number | null;
+      role: Role;
+    }) => ({
       id: u.id,
       name: u.name,
       email: u.email,

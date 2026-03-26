@@ -33,12 +33,23 @@ export async function GET() {
       },
     })
 
-    const response: PollResponse[] = polls.map(poll => ({
+    const response: PollResponse[] = polls.map((poll: {
+      id: string;
+      question: string;
+      expiresAt: Date | null;
+      _count: { votes: number };
+      options: Array<{ id: string; text: string; _count: { votes: number } }>;
+      votes: Array<{ pollOptionId: string }>;
+    }) => ({
       id: poll.id,
       question: poll.question,
       expiresAt: poll.expiresAt ? poll.expiresAt.toISOString() : null,
       totalVotes: poll._count.votes,
-      options: poll.options.map(opt => ({
+      options: poll.options.map((opt: {
+        id: string;
+        text: string;
+        _count: { votes: number };
+      }) => ({
         id: opt.id,
         text: opt.text,
         votes: opt._count.votes,
@@ -62,7 +73,7 @@ export async function POST(req: Request) {
     const body: unknown = await req.json()
 
     const isStringArray = (v: unknown): v is string[] =>
-      Array.isArray(v) && v.every(item => typeof item === "string")
+      Array.isArray(v) && v.every((item: unknown) => typeof item === "string")
 
     if (typeof body !== "object" || body === null) {
       return NextResponse.json({ error: "Invalid input" }, { status: 400 })
@@ -75,7 +86,7 @@ export async function POST(req: Request) {
     }
 
     const question = typeof payload.question === "string" ? payload.question.trim() : ""
-    const options = isStringArray(payload.options) ? payload.options.map(o => o.trim()) : []
+    const options = isStringArray(payload.options) ? payload.options.map((o: string) => o.trim()) : []
     const expiresAtRaw = payload.expiresAt
 
     if (!question || options.length < 2 || options.length > 6) {
@@ -97,7 +108,7 @@ export async function POST(req: Request) {
         createdBy: session.user.id,
         expiresAt,
         options: {
-          create: options.map(text => ({ text })),
+          create: options.map((text: string) => ({ text })),
         },
       },
     })
