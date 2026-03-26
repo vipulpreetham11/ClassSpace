@@ -1,0 +1,299 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider        = "prisma-client-js"
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+  PENDING
+}
+
+enum ReactionType {
+  LIKE
+  LOVE
+  FIRE
+  LAUGH
+}
+
+enum AlertType {
+  HOT
+  NORMAL
+  URGENT
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String  @map("user_id")
+  type               String
+  provider           String
+  providerAccountId  String  @map("provider_account_id")
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+
+  // ClassSpace specific
+  role          Role      @default(PENDING)
+  rollNumber    String?   @map("roll_number")
+  branch        String?
+  year          Int?
+  isApproved    Boolean   @default(false) @map("is_approved")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  accounts      Account[]
+  sessions      Session[]
+  notes         Note[]
+  notices       Notice[]
+  confessions   Confession[]
+  discussions   Discussion[]
+  comments      Comment[]
+  polls         Poll[]
+  pollVotes     PollVote[]
+  memes         Meme[]
+  birthdays     Birthday[]
+  assignments   Assignment[]
+  bookmarks     Bookmark[]
+  alerts        Alert[]
+  reactions     Reaction[]
+
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Note {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  subject     String
+  fileUrl     String   @map("file_url")
+  fileType    String   @map("file_type")
+  uploadedBy  String   @map("uploaded_by")
+  downloads   Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User       @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  bookmarks   Bookmark[]
+
+  @@map("notes")
+}
+
+model Notice {
+  id          String    @id @default(cuid())
+  title       String
+  content     String    @db.Text
+  isPinned    Boolean   @default(false) @map("is_pinned")
+  isUrgent    Boolean   @default(false) @map("is_urgent")
+  postedBy    String    @map("posted_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  expiresAt   DateTime? @map("expires_at")
+
+  user        User      @relation(fields: [postedBy], references: [id], onDelete: Cascade)
+
+  @@map("notices")
+}
+
+model Confession {
+  id          String   @id @default(cuid())
+  content     String   @db.Text
+  isApproved  Boolean  @default(false) @map("is_approved")
+  isRejected  Boolean  @default(false) @map("is_rejected")
+  postedBy    String?  @map("posted_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User?      @relation(fields: [postedBy], references: [id], onDelete: SetNull)
+  reactions   Reaction[]
+
+  @@map("confessions")
+}
+
+model Discussion {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   @db.Text
+  category    String
+  postedBy    String   @map("posted_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User       @relation(fields: [postedBy], references: [id], onDelete: Cascade)
+  comments    Comment[]
+  reactions   Reaction[]
+
+  @@map("discussions")
+}
+
+model Comment {
+  id           String   @id @default(cuid())
+  content      String   @db.Text
+  postedBy     String   @map("posted_by")
+  discussionId String   @map("discussion_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user         User       @relation(fields: [postedBy], references: [id], onDelete: Cascade)
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Poll {
+  id          String   @id @default(cuid())
+  question    String
+  createdBy   String   @map("created_by")
+  expiresAt   DateTime? @map("expires_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User         @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  options     PollOption[]
+  votes       PollVote[]
+
+  @@map("polls")
+}
+
+model PollOption {
+  id        String   @id @default(cuid())
+  text      String
+  pollId    String   @map("poll_id")
+
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes     PollVote[]
+
+  @@map("poll_options")
+}
+
+model PollVote {
+  id           String @id @default(cuid())
+  userId       String @map("user_id")
+  pollOptionId String @map("poll_option_id")
+  pollId       String @map("poll_id")
+
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  option       PollOption @relation(fields: [pollOptionId], references: [id], onDelete: Cascade)
+  poll         Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pollId])
+  @@map("poll_votes")
+}
+
+model Meme {
+  id          String   @id @default(cuid())
+  imageUrl    String   @map("image_url")
+  caption     String?
+  uploadedBy  String   @map("uploaded_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User       @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  reactions   Reaction[]
+
+  @@map("memes")
+}
+
+model Birthday {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  date        DateTime @db.Date
+  message     String?
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("birthdays")
+}
+
+model Assignment {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  subject     String
+  dueDate     DateTime @map("due_date")
+  fileUrl     String?  @map("file_url")
+  postedBy    String   @map("posted_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [postedBy], references: [id], onDelete: Cascade)
+
+  @@map("assignments")
+}
+
+model Bookmark {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  noteId      String   @map("note_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  note        Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, noteId])
+  @@map("bookmarks")
+}
+
+model Reaction {
+  id           String       @id @default(cuid())
+  type         ReactionType
+  userId       String       @map("user_id")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  
+  confessionId String?      @map("confession_id")
+  discussionId String?      @map("discussion_id")
+  memeId       String?      @map("meme_id")
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  confession   Confession?  @relation(fields: [confessionId], references: [id], onDelete: Cascade)
+  discussion   Discussion?  @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  meme         Meme?        @relation(fields: [memeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, confessionId])
+  @@unique([userId, discussionId])
+  @@unique([userId, memeId])
+  @@map("reactions")
+}
+
+model Alert {
+  id          String    @id @default(cuid())
+  message     String    @db.Text
+  type        AlertType
+  postedBy    String    @map("posted_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  expiresAt   DateTime? @map("expires_at")
+
+  user        User      @relation(fields: [postedBy], references: [id], onDelete: Cascade)
+
+  @@map("alerts")
+}
