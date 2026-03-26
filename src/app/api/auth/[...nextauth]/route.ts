@@ -3,7 +3,7 @@ import GoogleProvider from "next-auth/providers/google"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/db"
 import type { Adapter } from "next-auth/adapters"
-import type { Role } from "@prisma/client"
+type Role = "STUDENT" | "ADMIN" | "PENDING"
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as Adapter,
