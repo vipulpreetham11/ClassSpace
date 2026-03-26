@@ -93,7 +93,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const response: VoteResponse = {
       pollId,
       totalVotes: updated._count.votes,
-      options: updated.options.map(o => ({
+      options: updated.options.map((o: {
+        id: string;
+        text: string;
+        _count: { votes: number }
+      }) => ({
         id: o.id,
         text: o.text,
         votes: o._count.votes,
