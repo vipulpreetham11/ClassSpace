@@ -35,7 +35,7 @@ export async function GET() {
     const now = new Date()
 
     const response: BirthdayResponse[] = birthdays
-      .map(b => {
+      .map((b: typeof birthdays[number]) => {
         const next = new Date(b.date)
         next.setFullYear(now.getFullYear())
         if (next < now) next.setFullYear(now.getFullYear() + 1)
