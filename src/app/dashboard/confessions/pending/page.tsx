@@ -47,7 +47,7 @@ export default async function PendingConfessionsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {pending.map(conf => (
+          {pending.map((conf: typeof pending[0]) => (
             <PendingConfessionClient 
               key={conf.id} 
               id={conf.id}

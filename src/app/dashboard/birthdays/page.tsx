@@ -25,12 +25,22 @@ export default async function BirthdaysPage() {
   const currentMonth = today.getMonth();
   const currentDay = today.getDate();
 
-  const todaysBirthdays = birthdays.filter(b => {
+  const todaysBirthdays = birthdays.filter((b: {
+    id: string;
+    date: Date;
+    user: { name: string | null } | null;
+    message: string | null;
+  }) => {
     const d = new Date(b.date);
     return d.getMonth() === currentMonth && d.getDate() === currentDay;
   });
 
-  const upcomingBirthdays = birthdays.filter(b => {
+  const upcomingBirthdays = birthdays.filter((b: {
+    id: string;
+    date: Date;
+    user: { name: string | null } | null;
+    message: string | null;
+  }) => {
     const d = new Date(b.date);
     d.setFullYear(today.getFullYear()); 
     if (d < today) {
@@ -38,13 +48,13 @@ export default async function BirthdaysPage() {
     }
     const diffDays = Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     return diffDays > 0 && diffDays <= 30; 
-  }).sort((a, b) => {
+  }).sort((a: { date: Date }, b: { date: Date }) => {
     const da = new Date(a.date); da.setFullYear(today.getFullYear()); if (da < today) da.setFullYear(today.getFullYear() + 1);
     const db = new Date(b.date); db.setFullYear(today.getFullYear()); if (db < today) db.setFullYear(today.getFullYear() + 1);
     return da.getTime() - db.getTime();
   });
 
-  const getInitials = (name: string | null) => (name || "U").charAt(0).toUpperCase();
+  const getInitials = (name: string | null | undefined) => (name || "U").charAt(0).toUpperCase();
 
   const formatBirthday = (dateInput: Date | string) => formatDate(dateInput);
 
@@ -75,7 +85,11 @@ export default async function BirthdaysPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {todaysBirthdays.map(b => (
+            {todaysBirthdays.map((b: {
+              id: string;
+              user: { name: string | null } | null;
+              message: string | null;
+            }) => (
               <div key={b.id} className="bg-violet-600/10 border-2 border-violet-600 rounded-xl p-5 flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-violet-600 flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-sm">
                   {getInitials(b.user?.name)}
@@ -103,7 +117,12 @@ export default async function BirthdaysPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {upcomingBirthdays.map(b => (
+            {upcomingBirthdays.map((b: {
+              id: string;
+              date: Date;
+              user: { name: string | null } | null;
+              message: string | null;
+            }) => (
               <div key={b.id} className="bg-zinc-800 border border-zinc-700 rounded-xl p-5 flex gap-4 shadow-sm">
                 <div className="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
                   {getInitials(b.user?.name)}

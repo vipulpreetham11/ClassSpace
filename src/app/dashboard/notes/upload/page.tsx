@@ -156,7 +156,7 @@ export default function UploadNotePage() {
             disabled={uploadState !== "idle"}
             className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-600 focus:ring-1 focus:ring-violet-600 transition-shadow appearance-none disabled:opacity-50"
           >
-            {SUBJECTS.map(sub => (
+            {SUBJECTS.map((sub: string) => (
               <option key={sub} value={sub}>{sub}</option>
             ))}
           </select>

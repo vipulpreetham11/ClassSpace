@@ -113,7 +113,7 @@ export default function NewDiscussionPage() {
               disabled={status === "submitting"}
               className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-violet-600 focus:ring-1 focus:ring-violet-600 transition-shadow appearance-none"
             >
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              {CATEGORIES.map((c: string) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
         </div>

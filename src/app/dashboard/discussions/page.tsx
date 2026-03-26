@@ -56,7 +56,7 @@ export default async function DiscussionsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {discussions.map(disc => (
+          {discussions.map((disc: typeof discussions[0]) => (
             <Link 
               key={disc.id} 
               href={`/dashboard/discussions/${disc.id}`}

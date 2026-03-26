@@ -52,14 +52,14 @@ export default async function StudentsPage({ searchParams }: StudentsPageProps) 
   })
 
   const filtered = q
-    ? users.filter(u => {
+    ? users.filter((u: typeof users[0]) => {
         const nameMatch = (u.name ?? "").toLowerCase().includes(q)
         const emailMatch = (u.email ?? "").toLowerCase().includes(q)
         return nameMatch || emailMatch
       })
     : users
 
-  const cards: StudentCardUser[] = filtered.map(u => ({
+  const cards: StudentCardUser[] = filtered.map((u: typeof filtered[0]) => ({
     id: u.id,
     name: u.name,
     email: u.email,
@@ -110,7 +110,7 @@ export default async function StudentsPage({ searchParams }: StudentsPageProps) 
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {cards.map(u => {
+          {cards.map((u: StudentCardUser) => {
             const initials = getInitials(u.name ?? u.email)
             return (
               <div

@@ -84,7 +84,7 @@ export default async function NotesPage({ searchParams }: { searchParams: Promis
                 {subject}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {subjectNotes.map(note => (
+                {subjectNotes.map((note: typeof notes[0]) => (
                   <NoteCard 
                     key={note.id} 
                     note={note} 

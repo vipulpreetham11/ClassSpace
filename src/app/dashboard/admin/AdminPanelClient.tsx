@@ -55,8 +55,8 @@ export function AdminPanelClient({
     }
   };
 
-  const filteredStudents = initialStudents.filter(u => 
-    (u.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || 
+  const filteredStudents = initialStudents.filter((u: UserBasic) =>
+    (u.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
     (u.email?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   );
 
@@ -105,7 +105,7 @@ export function AdminPanelClient({
                 <p className="text-zinc-400 font-medium">No pending approvals</p>
               </div>
             ) : (
-              initialPending.map(user => (
+              initialPending.map((user: UserBasic) => (
                 <div key={user.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 bg-zinc-800 border border-zinc-700 rounded-xl hover:border-zinc-600 transition-colors">
                   <div className="flex items-center gap-4">
                     <UserAvatar name={user.name} image={user.image} email={user.email} />
@@ -156,7 +156,7 @@ export function AdminPanelClient({
                   <p className="text-zinc-400 font-medium">No students found</p>
                 </div>
               ) : (
-                filteredStudents.map(user => (
+                filteredStudents.map((user: UserBasic) => (
                   <div key={user.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 bg-zinc-800 border border-zinc-700 rounded-xl hover:border-zinc-600 transition-colors">
                     <div className="flex items-center gap-4">
                       <UserAvatar name={user.name} image={user.image} email={user.email} />

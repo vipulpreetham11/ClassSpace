@@ -76,7 +76,7 @@ export default async function DiscussionDetailPage({ params }: { params: Promise
         </div>
 
         <div className="space-y-4">
-          {discussion.comments.map(comment => (
+          {discussion.comments.map((comment: typeof discussion.comments[0]) => (
             <div key={comment.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex gap-4">
               <div className="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center shrink-0 shadow-sm">
                 <span className="text-white font-bold text-sm">

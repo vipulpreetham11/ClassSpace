@@ -29,8 +29,8 @@ export default async function PollsPage() {
     }
   });
 
-  const activePolls = polls.filter(p => !p.expiresAt || new Date(p.expiresAt) > new Date());
-  const expiredPolls = polls.filter(p => p.expiresAt && new Date(p.expiresAt) <= new Date());
+  const activePolls = polls.filter((p: typeof polls[0]) => !p.expiresAt || new Date(p.expiresAt) > new Date());
+  const expiredPolls = polls.filter((p: typeof polls[0]) => p.expiresAt && new Date(p.expiresAt) <= new Date());
   const sortedPolls = [...activePolls, ...expiredPolls];
 
   return (
@@ -59,16 +59,16 @@ export default async function PollsPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {sortedPolls.map(poll => {
+          {sortedPolls.map((poll: typeof polls[0]) => {
             const hasVoted = poll.votes.length > 0;
             const userVoteOptionId = hasVoted ? poll.votes[0].pollOptionId : null;
-            
+
             const sanitizedPoll = {
               id: poll.id,
               question: poll.question,
               expiresAt: poll.expiresAt ? poll.expiresAt.toISOString() : null,
               _count: poll._count,
-              options: poll.options.map(opt => ({
+              options: poll.options.map((opt: typeof poll.options[0]) => ({
                 id: opt.id,
                 text: opt.text,
                 _count: opt._count

@@ -66,15 +66,15 @@ export default async function ConfessionsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6">
-          {confessions.map(conf => (
-            <ConfessionCardClient 
-              key={conf.id} 
+          {confessions.map((conf: typeof confessions[0]) => (
+            <ConfessionCardClient
+              key={conf.id}
               id={conf.id}
               content={conf.content}
               createdAt={conf.createdAt}
-              reactions={conf.reactions.map(r => ({ type: r.type, userId: r.userId }))}
-              isAdmin={isAdmin} 
-              currentUserId={session.user.id} 
+              reactions={conf.reactions.map((r: typeof conf.reactions[0]) => ({ type: r.type, userId: r.userId }))}
+              isAdmin={isAdmin}
+              currentUserId={session.user.id}
             />
           ))}
         </div>

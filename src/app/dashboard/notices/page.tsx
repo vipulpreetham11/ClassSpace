@@ -60,7 +60,7 @@ export default async function NoticesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {notices.map(notice => (
+          {notices.map((notice: typeof notices[0]) => (
             <NoticeCard 
               key={notice.id} 
               notice={notice} 

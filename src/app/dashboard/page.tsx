@@ -72,19 +72,19 @@ export default async function DashboardPage() {
   })
 
   const events: ActivityEvent[] = [
-    ...notes.map(n => ({
+    ...notes.map((n: typeof notes[0]) => ({
       id: `note_${n.id}`,
       kind: "NOTE" as const,
       createdAt: n.createdAt,
       message: `${getDisplayName(n.user?.name ?? null, n.user?.email ?? null)} uploaded a note: ${n.title}`,
     })),
-    ...notices.map(n => ({
+    ...notices.map((n: typeof notices[0]) => ({
       id: `notice_${n.id}`,
       kind: "NOTICE" as const,
       createdAt: n.createdAt,
       message: `${getDisplayName(n.user?.name ?? null, n.user?.email ?? null)} posted a notice: ${n.title}`,
     })),
-    ...newUsers.map(u => ({
+    ...newUsers.map((u: typeof newUsers[0]) => ({
       id: `user_${u.id}`,
       kind: "USER" as const,
       createdAt: u.createdAt,
@@ -166,7 +166,7 @@ export default async function DashboardPage() {
           {events.length === 0 ? (
             <div className="p-6 text-zinc-400 text-sm">No activity yet.</div>
           ) : (
-            events.map(e => {
+            events.map((e: ActivityEvent) => {
               const { iconBg, Icon } = getEventAccent(e.kind)
               return (
                 <div

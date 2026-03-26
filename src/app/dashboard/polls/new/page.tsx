@@ -59,7 +59,7 @@ export default function NewPollPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const validOptions = options.filter(o => o.trim() !== "");
+    const validOptions = options.filter((o: string) => o.trim() !== "");
     if (!question.trim() || validOptions.length < 2) {
       setError("Question and at least 2 valid options are required.");
       return;

@@ -48,12 +48,12 @@ export function ConfessionCardClient({ id, content, createdAt, reactions, isAdmi
   };
 
   const reactionCounts = {
-    LAUGH: reactions.filter(r => r.type === "LAUGH").length,
-    LOVE: reactions.filter(r => r.type === "LOVE").length,
-    FIRE: reactions.filter(r => r.type === "FIRE").length,
+    LAUGH: reactions.filter((r: { type: string, userId: string }) => r.type === "LAUGH").length,
+    LOVE: reactions.filter((r: { type: string, userId: string }) => r.type === "LOVE").length,
+    FIRE: reactions.filter((r: { type: string, userId: string }) => r.type === "FIRE").length,
   };
 
-  const userReactions = new Set(reactions.filter(r => r.userId === currentUserId).map(r => r.type));
+  const userReactions = new Set(reactions.filter((r: { type: string, userId: string }) => r.userId === currentUserId).map((r: { type: string, userId: string }) => r.type));
 
   const calculateDaysAgo = (dateInput: Date | string) => {
     const diff = new Date().getTime() - new Date(dateInput).getTime();
