@@ -33,7 +33,7 @@ export default async function NotesPage({ searchParams }: { searchParams: Promis
     orderBy: { createdAt: "desc" }
   });
 
-  const groupedNotes = notes.reduce<Record<string, typeof notes>>((acc, note) => {
+  const groupedNotes = notes.reduce<Record<string, typeof notes>>((acc: Record<string, typeof notes>, note: typeof notes[0]) => {
     if (!acc[note.subject]) acc[note.subject] = [];
     acc[note.subject].push(note);
     return acc;
