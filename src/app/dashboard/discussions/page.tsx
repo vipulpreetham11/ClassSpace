@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Plus, MessageCircle, Hash } from "lucide-react";
 import { formatDate } from "@/lib/formatDate";
 
-export const dynamic = "force-dynamic"
 export const revalidate = 30 // Cache for 30 seconds;
 
 export default async function DiscussionsPage() {

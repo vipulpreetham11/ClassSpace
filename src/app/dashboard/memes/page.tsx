@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Plus, ImageOff } from "lucide-react";
 import { MemesPageClient } from "./MemesPageClient"; 
 
-export const dynamic = "force-dynamic"
 export const revalidate = 30 // Cache for 30 seconds;
 
 export default async function MemesPage() {

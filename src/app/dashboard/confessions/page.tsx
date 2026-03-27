@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Plus, MessageSquareOff } from "lucide-react";
 import { ConfessionsPageClient } from "./ConfessionsPageClient";
 
-export const dynamic = "force-dynamic"
 export const revalidate = 30 // Cache for 30 seconds;
 
 export default async function ConfessionsPage() {
