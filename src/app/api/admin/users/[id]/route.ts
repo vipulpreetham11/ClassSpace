@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { revalidatePath } from "next/cache";
 
 export async function PATCH(
   req: Request,
@@ -21,21 +22,38 @@ export async function PATCH(
         where: { id },
         data: { role: 'STUDENT', isApproved: true }
       });
+
+      // Revalidate admin and related pages
+      revalidatePath('/dashboard/admin');
+      revalidatePath('/dashboard/students');
+      revalidatePath('/dashboard');
+
       return NextResponse.json(user);
-    } 
-    
+    }
+
     if (body.action === 'reject') {
       await prisma.user.delete({
         where: { id }
       });
+
+      // Revalidate admin pages
+      revalidatePath('/dashboard/admin');
+      revalidatePath('/dashboard');
+
       return NextResponse.json({ success: true, action: 'deleted' });
     }
-    
+
     if (body.action === 'remove') {
       const user = await prisma.user.update({
         where: { id },
         data: { role: 'PENDING', isApproved: false }
       });
+
+      // Revalidate admin and related pages
+      revalidatePath('/dashboard/admin');
+      revalidatePath('/dashboard/students');
+      revalidatePath('/dashboard');
+
       return NextResponse.json(user);
     }
 

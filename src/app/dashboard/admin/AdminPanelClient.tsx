@@ -32,21 +32,63 @@ export function AdminPanelClient({
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoadingId, setIsLoadingId] = useState<string | null>(null);
 
+  // Local state management for instant updates
+  const [pendingUsers, setPendingUsers] = useState(initialPending);
+  const [students, setStudents] = useState(initialStudents);
+
   const handleAction = async (id: string, action: "approve" | "reject" | "remove") => {
     if (action === "reject" || action === "remove") {
       if (!confirm(`Are you sure you want to ${action} this user?`)) return;
     }
-    
+
     setIsLoadingId(id);
+
+    // Find the user for instant UI update
+    const pendingUser = pendingUsers.find(user => user.id === id);
+    const studentUser = students.find(user => user.id === id);
+
     try {
+      // Optimistically update UI first for instant feedback
+      if (action === "approve" && pendingUser) {
+        // Remove from pending list
+        setPendingUsers(prev => prev.filter(user => user.id !== id));
+        // Add to students list
+        setStudents(prev => [pendingUser, ...prev]);
+      } else if (action === "reject" && pendingUser) {
+        // Remove from pending list
+        setPendingUsers(prev => prev.filter(user => user.id !== id));
+      } else if (action === "remove" && studentUser) {
+        // Remove from students list
+        setStudents(prev => prev.filter(user => user.id !== id));
+        // Add to pending list
+        setPendingUsers(prev => [studentUser, ...prev]);
+      }
+
+      // Then make the API call
       const res = await fetch(`/api/admin/users/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
-      if (!res.ok) throw new Error("Action failed");
-      router.refresh(); 
+
+      if (!res.ok) {
+        throw new Error("Action failed");
+      }
+
+      // Keep the router.refresh as backup
+      router.refresh();
     } catch (error) {
+      // Revert optimistic update if API call failed
+      if (action === "approve" && pendingUser) {
+        setPendingUsers(prev => [pendingUser, ...prev]);
+        setStudents(prev => prev.filter(user => user.id !== id));
+      } else if (action === "reject" && pendingUser) {
+        setPendingUsers(prev => [pendingUser, ...prev]);
+      } else if (action === "remove" && studentUser) {
+        setStudents(prev => [studentUser, ...prev]);
+        setPendingUsers(prev => prev.filter(user => user.id !== id));
+      }
+
       const message = error instanceof Error ? error.message : "Unknown error";
       console.error(message);
       alert("Failed to perform action");
@@ -55,7 +97,7 @@ export function AdminPanelClient({
     }
   };
 
-  const filteredStudents = initialStudents.filter((u: UserBasic) =>
+  const filteredStudents = students.filter((u: UserBasic) =>
     (u.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
     (u.email?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   );
@@ -79,9 +121,9 @@ export function AdminPanelClient({
             }`}
           >
             {tab === "pending" ? "Pending Approvals" : tab === "students" ? "All Students" : "Overview"}
-            {tab === "pending" && initialPending.length > 0 && (
+            {tab === "pending" && pendingUsers.length > 0 && (
               <span className="ml-2 inline-flex items-center justify-center px-2 text-xs font-bold rounded-full bg-orange-500/20 text-orange-400">
-                {initialPending.length}
+                {pendingUsers.length}
               </span>
             )}
           </button>
@@ -100,12 +142,12 @@ export function AdminPanelClient({
 
         {activeTab === "pending" && (
           <div className="space-y-4">
-            {initialPending.length === 0 ? (
+            {pendingUsers.length === 0 ? (
               <div className="text-center py-16 bg-zinc-900 border border-zinc-800 rounded-xl">
                 <p className="text-zinc-400 font-medium">No pending approvals</p>
               </div>
             ) : (
-              initialPending.map((user: UserBasic) => (
+              pendingUsers.map((user: UserBasic) => (
                 <div key={user.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 bg-zinc-800 border border-zinc-700 rounded-xl hover:border-zinc-600 transition-colors">
                   <div className="flex items-center gap-4">
                     <UserAvatar name={user.name} image={user.image} email={user.email} />

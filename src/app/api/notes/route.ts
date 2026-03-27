@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { revalidatePath } from "next/cache";
 
 export async function GET() {
   try {
@@ -49,6 +50,10 @@ export async function POST(req: Request) {
         uploadedBy: session.user.id,
       }
     });
+
+    // Revalidate notes pages so they show fresh data
+    revalidatePath('/dashboard/notes');
+    revalidatePath('/dashboard');
 
     return NextResponse.json(note);
   } catch (error) {
