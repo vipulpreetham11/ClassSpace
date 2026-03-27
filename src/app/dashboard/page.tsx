@@ -6,6 +6,7 @@ import { FileText, Bell, Users, Ghost, Clock } from "lucide-react"
 import { formatDate } from "@/lib/formatDate"
 
 export const dynamic = "force-dynamic"
+export const revalidate = 30 // Cache for 30 seconds
 
 type ActivityEventKind = "NOTE" | "NOTICE" | "USER"
 

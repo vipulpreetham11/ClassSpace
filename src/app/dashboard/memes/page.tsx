@@ -4,9 +4,10 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Plus, ImageOff } from "lucide-react";
-import { MemeCardClient } from "./MemeCardClient"; 
+import { MemesPageClient } from "./MemesPageClient"; 
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"
+export const revalidate = 30 // Cache for 30 seconds;
 
 export default async function MemesPage() {
   const session = await getServerSession(authOptions);
@@ -16,12 +17,15 @@ export default async function MemesPage() {
   const isAdmin = session.user.role === "ADMIN";
 
   const memes = await prisma.meme.findMany({
+    take: 20, // Load first 20 for instant display
     orderBy: { createdAt: "desc" },
     include: {
       reactions: true,
       user: { select: { name: true } }
     }
   });
+
+  const totalMemes = await prisma.meme.count();
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-12">
@@ -48,16 +52,12 @@ export default async function MemesPage() {
           <p className="text-zinc-400 font-medium text-lg">No memes yet 💀</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {memes.map((meme: typeof memes[0]) => (
-            <MemeCardClient 
-              key={meme.id} 
-              meme={meme} 
-              isAdmin={isAdmin} 
-              currentUserId={session.user.id} 
-            />
-          ))}
-        </div>
+        <MemesPageClient
+          initialMemes={memes}
+          totalMemes={totalMemes}
+          isAdmin={isAdmin}
+          currentUserId={session.user.id}
+        />
       )}
     </div>
   );

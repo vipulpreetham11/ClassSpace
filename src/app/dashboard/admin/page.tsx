@@ -4,7 +4,8 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { AdminPanelClient } from "./AdminPanelClient";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"
+export const revalidate = 30 // Cache for 30 seconds;
 
 export default async function AdminPage() {
   const session = await getServerSession(authOptions);

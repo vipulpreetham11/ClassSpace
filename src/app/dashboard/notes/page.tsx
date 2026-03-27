@@ -6,7 +6,8 @@ import { NoteCard } from "@/components/notes/NoteCard";
 import Link from "next/link";
 import { Search, FileX, ShieldPlus } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"
+export const revalidate = 30 // Cache for 30 seconds;
 
 export default async function NotesPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const session = await getServerSession(authOptions);

@@ -6,7 +6,8 @@ import Link from "next/link";
 import { Plus, MessageCircle, Hash } from "lucide-react";
 import { formatDate } from "@/lib/formatDate";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"
+export const revalidate = 30 // Cache for 30 seconds;
 
 export default async function DiscussionsPage() {
   const session = await getServerSession(authOptions);
@@ -14,6 +15,7 @@ export default async function DiscussionsPage() {
   if (session.user.role === "PENDING") redirect("/pending");
 
   const discussions = await prisma.discussion.findMany({
+    take: 20, // Load first 20 for instant display
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { name: true } },

@@ -2,14 +2,19 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role === "PENDING") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
+    const { searchParams } = new URL(req.url);
+    const skip = parseInt(searchParams.get('skip') || '0');
+    const take = parseInt(searchParams.get('take') || '20');
+
     if (session.user.role === "ADMIN") {
       const pending = await prisma.confession.findMany({
         where: { isApproved: false, isRejected: false },
@@ -20,6 +25,8 @@ export async function GET() {
     } else {
       const approved = await prisma.confession.findMany({
         where: { isApproved: true },
+        skip,
+        take,
         orderBy: { createdAt: "desc" },
         include: { reactions: true }
       });
@@ -50,6 +57,10 @@ export async function POST(req: Request) {
         postedBy: session.user.id
       }
     });
+
+    // Revalidate confessions page
+    revalidatePath('/dashboard/confessions');
+    revalidatePath('/dashboard');
 
     return NextResponse.json(confession, { status: 201 });
   } catch (error) {

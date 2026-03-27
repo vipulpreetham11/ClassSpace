@@ -2,15 +2,22 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role === "PENDING") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
+    const { searchParams } = new URL(req.url);
+    const skip = parseInt(searchParams.get('skip') || '0');
+    const take = parseInt(searchParams.get('take') || '20');
+
     const memes = await prisma.meme.findMany({
+      skip,
+      take,
       orderBy: { createdAt: "desc" },
       include: {
         reactions: true,
@@ -42,6 +49,10 @@ export async function POST(req: Request) {
         uploadedBy: session.user.id
       }
     });
+
+    // Revalidate memes page for instant visibility
+    revalidatePath('/dashboard/memes');
+    revalidatePath('/dashboard');
 
     return NextResponse.json(meme, { status: 201 });
   } catch (error) {

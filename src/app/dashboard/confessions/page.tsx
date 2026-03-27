@@ -4,9 +4,10 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Plus, MessageSquareOff } from "lucide-react";
-import { ConfessionCardClient } from "./ConfessionCardClient";
+import { ConfessionsPageClient } from "./ConfessionsPageClient";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"
+export const revalidate = 30 // Cache for 30 seconds;
 
 export default async function ConfessionsPage() {
   const session = await getServerSession(authOptions);
@@ -17,11 +18,14 @@ export default async function ConfessionsPage() {
 
   const confessions = await prisma.confession.findMany({
     where: { isApproved: true },
+    take: 20, // Load first 20 for instant display
     orderBy: { createdAt: "desc" },
     include: {
       reactions: true,
     }
   });
+
+  const totalConfessions = await prisma.confession.count({ where: { isApproved: true } });
 
   const pendingCount = isAdmin ? await prisma.confession.count({ where: { isApproved: false, isRejected: false } }) : 0;
 
@@ -65,19 +69,12 @@ export default async function ConfessionsPage() {
           <p className="text-zinc-500 text-sm">Be the first to share something anonymously!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6">
-          {confessions.map((conf: typeof confessions[0]) => (
-            <ConfessionCardClient
-              key={conf.id}
-              id={conf.id}
-              content={conf.content}
-              createdAt={conf.createdAt}
-              reactions={conf.reactions.map((r: typeof conf.reactions[0]) => ({ type: r.type, userId: r.userId }))}
-              isAdmin={isAdmin}
-              currentUserId={session.user.id}
-            />
-          ))}
-        </div>
+        <ConfessionsPageClient
+          initialConfessions={confessions}
+          totalConfessions={totalConfessions}
+          isAdmin={isAdmin}
+          currentUserId={session.user.id}
+        />
       )}
     </div>
   );
