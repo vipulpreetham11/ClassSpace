@@ -1,27 +1,13 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  Home,
-  FileText,
-  MessageSquareMore,
-  Image,
-  MessageCircle,
-  Bell,
-  Users,
-  Settings,
-  Loader2,
-  LogOut,
-  BarChart2,
-  Cake
-} from 'lucide-react';
-
-// Import existing page components (we'll convert them)
+import { Loader2, FileText, Bell, Users, MessageSquareMore } from 'lucide-react';
 import { formatDate } from "@/lib/formatDate";
+import { Sidebar } from './BeautifulSidebar';
 
-type TabType = 'home' | 'notes' | 'confessions' | 'memes' | 'discussions' | 'notices' | 'students' | 'admin';
+type TabType = 'home' | 'notes' | 'confessions' | 'memes' | 'discussions' | 'notices' | 'students' | 'admin' | 'polls' | 'birthdays';
 
 interface DashboardData {
   // Home data
@@ -111,10 +97,15 @@ export default function DashboardClient() {
   // Set initial tab from URL params
   useEffect(() => {
     const tab = searchParams.get('tab') as TabType;
-    if (tab && ['home', 'notes', 'confessions', 'memes', 'discussions', 'notices', 'students', 'admin'].includes(tab)) {
+    if (tab && ['home', 'notes', 'confessions', 'memes', 'discussions', 'notices', 'students', 'admin', 'polls', 'birthdays'].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
+
+  // Handle tab changes
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+  };
 
   // Load all dashboard data at once
   const loadDashboardData = async () => {
@@ -216,17 +207,6 @@ export default function DashboardClient() {
   }
 
   const username = session?.user?.name ? session.user.name.split(" ")[0] : "Student";
-
-  const tabs = [
-    { id: 'home' as TabType, label: 'Home', icon: Home },
-    { id: 'notes' as TabType, label: 'Notes', icon: FileText },
-    { id: 'notices' as TabType, label: 'Notices', icon: Bell },
-    { id: 'discussions' as TabType, label: 'Discussions', icon: MessageCircle },
-    { id: 'confessions' as TabType, label: 'Confessions', icon: MessageSquareMore },
-    { id: 'memes' as TabType, label: 'Memes', icon: Image },
-    { id: 'students' as TabType, label: 'Students', icon: Users },
-    ...(isAdmin ? [{ id: 'admin' as TabType, label: 'Admin', icon: Settings }] : [])
-  ];
 
   const renderTabContent = () => {
     if (!data) return null;
@@ -447,11 +427,27 @@ export default function DashboardClient() {
           </div>
         );
 
+      case 'polls':
+        return (
+          <div className="text-center py-12">
+            <p className="text-white text-xl">Polls</p>
+            <p className="text-zinc-400 mt-2">Vote on class decisions and share opinions</p>
+          </div>
+        );
+
+      case 'birthdays':
+        return (
+          <div className="text-center py-12">
+            <p className="text-white text-xl">Birthdays</p>
+            <p className="text-zinc-400 mt-2">Never miss a classmate's birthday</p>
+          </div>
+        );
+
       case 'admin':
         return (
           <div className="text-center py-12">
             <p className="text-white text-xl">Admin Panel</p>
-            <p className="text-zinc-400 mt-2">Click the Admin link in the top navigation for full admin features</p>
+            <p className="text-zinc-400 mt-2">Click the Admin link in the navigation for full admin features</p>
           </div>
         );
 
@@ -466,60 +462,12 @@ export default function DashboardClient() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      {/* Navigation */}
-      <nav className="border-b border-zinc-800 sticky top-0 bg-zinc-950/90 backdrop-blur z-10">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-8 overflow-x-auto">
-              <div className="text-xl font-bold text-violet-400 whitespace-nowrap">ClassSpace</div>
-              <div className="flex gap-1">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  const isActive = activeTab === tab.id;
-
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
-                        isActive
-                          ? 'bg-violet-600 text-white'
-                          : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* User Profile & Logout */}
-            <div className="flex items-center gap-3">
-              <div className="hidden md:flex items-center gap-2 text-sm">
-                <span className="text-zinc-400">Welcome back,</span>
-                <span className="text-white font-medium">{username}</span>
-              </div>
-              <button
-                onClick={() => signOut({ callbackUrl: "/login" })}
-                className="flex items-center gap-2 px-3 py-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
-                title="Sign out"
-              >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden md:inline">Sign out</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+    <>
+      <Sidebar activeTab={activeTab} onTabChange={handleTabChange} />
+      <main className="flex-1 overflow-y-auto p-4 md:p-8 w-full">
         {renderTabContent()}
       </main>
-    </div>
+    </>
   );
 }
 
