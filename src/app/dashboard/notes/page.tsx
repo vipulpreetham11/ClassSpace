@@ -78,23 +78,27 @@ export default async function NotesPage({ searchParams }: { searchParams: Promis
         </div>
       ) : (
         <div className="space-y-12">
-          {Object.entries(groupedNotes).map(([subject, subjectNotes]) => (
-            <section key={subject} className="space-y-6">
-              <h2 className="text-xl font-bold text-violet-400 border-b border-zinc-800 pb-3">
-                {subject}
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {subjectNotes.map((note: typeof notes[0]) => (
-                  <NoteCard 
-                    key={note.id} 
-                    note={note} 
-                    isBookmarked={note.bookmarks.length > 0} 
-                    isAdmin={isAdmin}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
+          {Object.entries(groupedNotes).map(([subject, subjectNotes]) => {
+            const typedNotes = subjectNotes as typeof notes
+
+            return (
+              <section key={subject} className="space-y-6">
+                <h2 className="text-xl font-bold text-violet-400 border-b border-zinc-800 pb-3">
+                  {subject}
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {typedNotes.map((note: typeof notes[0]) => (
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      isBookmarked={note.bookmarks.length > 0}
+                      isAdmin={isAdmin}
+                    />
+                  ))}
+                </div>
+              </section>
+            )
+          })}
         </div>
       )}
     </div>
