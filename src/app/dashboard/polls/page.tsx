@@ -61,7 +61,7 @@ export default async function PollsPage() {
         <div className="space-y-6">
           {sortedPolls.map((poll: typeof polls[0]) => {
             const hasVoted = poll.votes.length > 0;
-            const userVoteOptionId = hasVoted ? poll.votes[0].pollOptionId : null;
+            const userVoteOptionId = hasVoted ? poll.votes[0]!.pollOptionId : null;
 
             const sanitizedPoll = {
               id: poll.id,
