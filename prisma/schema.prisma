@@ -142,6 +142,7 @@ model Confession {
   user        User?      @relation(fields: [postedBy], references: [id], onDelete: SetNull)
   reactions   Reaction[]
 
+  @@index([isApproved])
   @@map("confessions")
 }
 
@@ -282,6 +283,9 @@ model Reaction {
   @@unique([userId, confessionId])
   @@unique([userId, discussionId])
   @@unique([userId, memeId])
+  @@index([confessionId])
+  @@index([discussionId])
+  @@index([memeId])
   @@map("reactions")
 }
 

@@ -2,15 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Loader2, FileText, Bell, Users, MessageSquareMore } from 'lucide-react';
 import { formatDate } from "@/lib/formatDate";
 import { Sidebar } from './BeautifulSidebar';
 
-type TabType = 'home' | 'notes' | 'confessions' | 'memes' | 'discussions' | 'notices' | 'students' | 'admin' | 'polls' | 'birthdays';
-
 interface DashboardData {
-  // Home data
   stats: {
     totalNotes: number;
     activeNotices: number;
@@ -23,135 +20,30 @@ interface DashboardData {
     message: string;
     createdAt: string;
   }>;
-
-  // Other pages data
-  notes: Array<{
-    id: string;
-    title: string;
-    subject: string;
-    description: string;
-    user: { name: string | null };
-    createdAt: string;
-    bookmarks: Array<{ userId: string }>;
-  }>;
-
-  memes: Array<{
-    id: string;
-    imageUrl: string;
-    caption: string | null;
-    createdAt: string;
-    reactions: Array<{ type: string; userId: string }>;
-    user: { name: string | null };
-  }>;
-
-  confessions: Array<{
-    id: string;
-    content: string;
-    createdAt: string;
-    reactions: Array<{ type: string; userId: string }>;
-  }>;
-
-  discussions: Array<{
-    id: string;
-    title: string;
-    category: string;
-    content: string;
-    createdAt: string;
-    user: { name: string | null };
-    _count: { comments: number };
-  }>;
-
-  notices: Array<{
-    id: string;
-    title: string;
-    content: string;
-    isPinned: boolean;
-    isUrgent: boolean;
-    createdAt: string;
-    user: { name: string | null };
-  }>;
-
-  students: Array<{
-    id: string;
-    name: string | null;
-    email: string | null;
-    rollNumber: string | null;
-    branch: string | null;
-    year: number | null;
-    createdAt: string;
-  }>;
 }
 
 export default function DashboardClient() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState<TabType>('home');
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const isAdmin = session?.user?.role === 'ADMIN';
 
-  // Set initial tab from URL params
-  useEffect(() => {
-    const tab = searchParams.get('tab') as TabType;
-    if (tab && ['home', 'notes', 'confessions', 'memes', 'discussions', 'notices', 'students', 'admin', 'polls', 'birthdays'].includes(tab)) {
-      setActiveTab(tab);
-    }
-  }, [searchParams]);
-
-  // Handle tab changes
-  const handleTabChange = (tab: TabType) => {
-    setActiveTab(tab);
-  };
-
-  // Load all dashboard data at once
   const loadDashboardData = async () => {
     if (status !== 'authenticated') return;
 
     try {
       setLoading(true);
-
-      // Load all data in parallel
-      const [
-        homeRes,
-        notesRes,
-        memesRes,
-        confessionsRes,
-        discussionsRes,
-        noticesRes,
-        studentsRes
-      ] = await Promise.all([
-        fetch('/api/dashboard/home'),
-        fetch('/api/notes?take=50'),
-        fetch('/api/memes?take=50'),
-        fetch('/api/confessions?take=50'),
-        fetch('/api/discussions?take=50'),
-        fetch('/api/notices?take=50'),
-        fetch('/api/students')
-      ]);
-
-      const [homeData, notes, memes, confessions, discussions, notices, students] = await Promise.all([
-        homeRes.json(),
-        notesRes.json(),
-        memesRes.json(),
-        confessionsRes.json(),
-        discussionsRes.json(),
-        noticesRes.json(),
-        studentsRes.json()
-      ]);
+      const res = await fetch('/api/dashboard/home');
+      if (!res.ok) throw new Error('Failed to load dashboard');
+      const homeData = await res.json();
 
       setData({
         stats: homeData.stats,
         recentActivity: homeData.recentActivity,
-        notes,
-        memes,
-        confessions,
-        discussions,
-        notices,
-        students
       });
 
       setLoading(false);
@@ -161,12 +53,9 @@ export default function DashboardClient() {
     }
   };
 
-  // Load data on mount and every 30 seconds
+  // Load data once on mount only — no polling
   useEffect(() => {
     loadDashboardData();
-
-    const interval = setInterval(loadDashboardData, 30000); // 30 seconds
-    return () => clearInterval(interval);
   }, [status]);
 
   // Handle authentication
@@ -208,12 +97,11 @@ export default function DashboardClient() {
 
   const username = session?.user?.name ? session.user.name.split(" ")[0] : "Student";
 
-  const renderTabContent = () => {
-    if (!data) return null;
-
-    switch (activeTab) {
-      case 'home':
-        return (
+  return (
+    <>
+      <Sidebar />
+      <main className="flex-1 overflow-y-auto p-4 md:p-8 w-full">
+        {data && (
           <div className="space-y-8">
             <div>
               <h1 className="text-3xl font-bold text-white tracking-tight">
@@ -222,7 +110,6 @@ export default function DashboardClient() {
               <p className="text-zinc-400 mt-2">Here is what is happening in CSM-A today.</p>
             </div>
 
-            {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard title="Total Notes" value={data.stats.totalNotes} icon="notes" />
               <StatCard title="Active Notices" value={data.stats.activeNotices} icon="notices" />
@@ -232,240 +119,31 @@ export default function DashboardClient() {
               )}
             </div>
 
-            {/* Recent Activity */}
             <div>
-              <h2 className="text-xl font-bold text-white mb-4">Recent Activity</h2>
-              <div className="bg-zinc-800 border border-zinc-800 rounded-xl overflow-hidden divide-y divide-zinc-800/50">
-                {data.recentActivity.length === 0 ? (
-                  <div className="p-6 text-zinc-400 text-sm">No activity yet.</div>
-                ) : (
-                  data.recentActivity.map((activity) => (
-                    <div key={activity.id} className="p-4 flex items-center gap-4 hover:bg-zinc-700/50 transition-colors">
-                      <div className="w-10 h-10 rounded-full bg-violet-600/20 flex items-center justify-center shrink-0">
-                        <FileText className="w-5 h-5 text-violet-600" />
+              <h2 className="text-xl font-semibold text-white mb-4">Recent Activity</h2>
+              {data.recentActivity.length === 0 ? (
+                <p className="text-zinc-500 text-sm">No activity yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {data.recentActivity.map((event) => (
+                    <div
+                      key={event.id}
+                      className="flex items-start gap-3 bg-zinc-800 rounded-xl p-4 border border-zinc-700"
+                    >
+                      <div className="p-2 rounded-lg bg-violet-600/20 text-violet-400 shrink-0">
+                        <FileText className="w-4 h-4" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{activity.message}</p>
-                        <p className="text-xs text-zinc-400 mt-1">{formatDate(new Date(activity.createdAt))}</p>
+                        <p className="text-white text-sm">{event.message}</p>
+                        <p className="text-zinc-500 text-xs mt-1">{formatDate(new Date(event.createdAt))}</p>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'notes':
-        return (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-3xl font-bold text-white">Notes Library</h1>
-                <p className="text-zinc-400">Access all your class materials.</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {data.notes.slice(0, 20).map((note) => (
-                <div key={note.id} className="bg-zinc-800 rounded-xl p-4 border border-zinc-700">
-                  <h3 className="text-white font-medium mb-2 line-clamp-2">{note.title}</h3>
-                  <p className="text-zinc-400 text-sm mb-3 line-clamp-2">{note.description}</p>
-                  <div className="flex justify-between items-center text-xs text-zinc-500">
-                    <span className="bg-violet-600/20 text-violet-400 px-2 py-1 rounded">{note.subject}</span>
-                    <span>{formatDate(new Date(note.createdAt))}</span>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           </div>
-        );
-
-      case 'memes':
-        return (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-3xl font-bold text-white">Memes</h1>
-                <p className="text-zinc-400">Campus humor and relatable moments.</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {data.memes.slice(0, 20).map((meme) => (
-                <div key={meme.id} className="bg-zinc-800 rounded-xl overflow-hidden border border-zinc-700">
-                  <img src={meme.imageUrl} alt="Meme" className="w-full h-48 object-cover" />
-                  {meme.caption && (
-                    <div className="p-4">
-                      <p className="text-white text-sm">{meme.caption}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'confessions':
-        return (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-3xl font-bold text-white">Confessions Wall</h1>
-                <p className="text-zinc-400">Anonymous thoughts and feelings from campus.</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 max-w-4xl">
-              {data.confessions.slice(0, 20).map((confession) => (
-                <div key={confession.id} className="bg-zinc-800 rounded-xl p-6 border border-zinc-700">
-                  <p className="text-white text-sm leading-relaxed mb-4">{confession.content}</p>
-                  <div className="flex justify-between items-center text-xs text-zinc-500">
-                    <span>{formatDate(new Date(confession.createdAt))}</span>
-                    <span>{confession.reactions.length} reactions</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'discussions':
-        return (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-3xl font-bold text-white">Discussions</h1>
-                <p className="text-zinc-400">Start conversations and ask for help.</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4">
-              {data.discussions.slice(0, 20).map((discussion) => (
-                <div key={discussion.id} className="bg-zinc-800 rounded-xl p-5 border border-zinc-700">
-                  <div className="flex justify-between items-start mb-3">
-                    <span className="px-2 py-1 text-xs bg-violet-600/20 text-violet-400 rounded">{discussion.category}</span>
-                    <span className="text-xs text-zinc-500">{formatDate(new Date(discussion.createdAt))}</span>
-                  </div>
-                  <h3 className="text-white font-medium mb-2">{discussion.title}</h3>
-                  <p className="text-zinc-400 text-sm mb-3 line-clamp-2">{discussion.content}</p>
-                  <div className="flex justify-between items-center text-xs text-zinc-500">
-                    <span>by {discussion.user?.name || "Unknown"}</span>
-                    <span>{discussion._count.comments} comments</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'notices':
-        return (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-3xl font-bold text-white">Notices</h1>
-                <p className="text-zinc-400">Important announcements and updates.</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4">
-              {data.notices.slice(0, 20).map((notice) => (
-                <div key={notice.id} className={`rounded-xl p-5 border ${
-                  notice.isUrgent ? 'bg-red-900/20 border-red-700' : 'bg-zinc-800 border-zinc-700'
-                }`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-white font-medium">{notice.title}</h3>
-                    {notice.isPinned && (
-                      <span className="px-2 py-1 text-xs bg-yellow-600/20 text-yellow-400 rounded">Pinned</span>
-                    )}
-                    {notice.isUrgent && (
-                      <span className="px-2 py-1 text-xs bg-red-600/20 text-red-400 rounded">Urgent</span>
-                    )}
-                  </div>
-                  <p className="text-zinc-400 text-sm mb-3 line-clamp-3">{notice.content}</p>
-                  <div className="flex justify-between items-center text-xs text-zinc-500">
-                    <span>by {notice.user?.name || "Admin"}</span>
-                    <span>{formatDate(new Date(notice.createdAt))}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'students':
-        return (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-3xl font-bold text-white">Students</h1>
-                <p className="text-zinc-400">Browse your classmates and their profiles.</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {data.students.slice(0, 30).map((student) => (
-                <div key={student.id} className="bg-zinc-800 rounded-xl p-4 border border-zinc-700">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center text-white font-bold">
-                      {student.name?.charAt(0) || student.email?.charAt(0) || "U"}
-                    </div>
-                    <div>
-                      <h3 className="text-white font-medium">{student.name || "Unknown"}</h3>
-                      <p className="text-zinc-400 text-sm">{student.email}</p>
-                    </div>
-                  </div>
-                  {(student.rollNumber || student.branch || student.year) && (
-                    <div className="text-xs text-violet-300 bg-zinc-900 px-2 py-1 rounded">
-                      {student.rollNumber || "N/A"} • {student.branch || "N/A"} • Yr {student.year || "?"}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      case 'polls':
-        return (
-          <div className="text-center py-12">
-            <p className="text-white text-xl">Polls</p>
-            <p className="text-zinc-400 mt-2">Vote on class decisions and share opinions</p>
-          </div>
-        );
-
-      case 'birthdays':
-        return (
-          <div className="text-center py-12">
-            <p className="text-white text-xl">Birthdays</p>
-            <p className="text-zinc-400 mt-2">Never miss a classmate's birthday</p>
-          </div>
-        );
-
-      case 'admin':
-        return (
-          <div className="text-center py-12">
-            <p className="text-white text-xl">Admin Panel</p>
-            <p className="text-zinc-400 mt-2">Click the Admin link in the navigation for full admin features</p>
-          </div>
-        );
-
-      default:
-        return (
-          <div className="text-center py-12">
-            <p className="text-white text-xl">Coming soon...</p>
-            <p className="text-zinc-400 mt-2">This tab is being optimized</p>
-          </div>
-        );
-    }
-  };
-
-  return (
-    <>
-      <Sidebar activeTab={activeTab} onTabChange={handleTabChange} />
-      <main className="flex-1 overflow-y-auto p-4 md:p-8 w-full">
-        {renderTabContent()}
+        )}
       </main>
     </>
   );

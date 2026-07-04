@@ -16,25 +16,60 @@ type UserBasic = {
   year?: number | null;
 };
 
+type ConfessionBasic = {
+  id: string;
+  content: string;
+  createdAt: Date;
+};
+
 interface AdminPanelClientProps {
   initialPending: UserBasic[]
   initialStudents: UserBasic[]
+  initialPendingConfessions: ConfessionBasic[]
   stats: { totalStudents: number; pendingApprovals: number; totalNotes: number; totalNotices: number; }
 }
 
 export function AdminPanelClient({
   initialPending,
   initialStudents,
+  initialPendingConfessions,
   stats,
 }: AdminPanelClientProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"pending" | "students" | "overview">("pending");
+  const [activeTab, setActiveTab] = useState<"pending" | "students" | "confessions" | "overview">("pending");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoadingId, setIsLoadingId] = useState<string | null>(null);
+  const [isLoadingConfessionId, setIsLoadingConfessionId] = useState<string | null>(null);
 
   // Local state management for instant updates
   const [pendingUsers, setPendingUsers] = useState(initialPending);
   const [students, setStudents] = useState(initialStudents);
+  const [pendingConfessions, setPendingConfessions] = useState(initialPendingConfessions);
+
+  const handleConfessionAction = async (id: string, action: "approve" | "reject") => {
+    setIsLoadingConfessionId(id);
+    const original = pendingConfessions;
+
+    // Optimistic update
+    setPendingConfessions(prev => prev.filter(c => c.id !== id));
+
+    try {
+      const res = await fetch(`/api/confessions/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      if (!res.ok) throw new Error("Action failed");
+      router.refresh();
+    } catch (error) {
+      setPendingConfessions(original);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(message);
+      alert("Failed to perform action");
+    } finally {
+      setIsLoadingConfessionId(null);
+    }
+  };
 
   const handleAction = async (id: string, action: "approve" | "reject" | "remove") => {
     if (action === "reject" || action === "remove") {
@@ -110,7 +145,7 @@ export function AdminPanelClient({
       </div>
 
       <div className="flex bg-zinc-900 border border-zinc-800 rounded-xl p-1 gap-1 overflow-x-auto">
-        {(["pending", "students", "overview"] as const).map((tab) => (
+        {(["pending", "students", "confessions", "overview"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -120,10 +155,15 @@ export function AdminPanelClient({
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800"
             }`}
           >
-            {tab === "pending" ? "Pending Approvals" : tab === "students" ? "All Students" : "Overview"}
+            {tab === "pending" ? "Pending Approvals" : tab === "students" ? "All Students" : tab === "confessions" ? "Confessions" : "Overview"}
             {tab === "pending" && pendingUsers.length > 0 && (
               <span className="ml-2 inline-flex items-center justify-center px-2 text-xs font-bold rounded-full bg-orange-500/20 text-orange-400">
                 {pendingUsers.length}
+              </span>
+            )}
+            {tab === "confessions" && pendingConfessions.length > 0 && (
+              <span className="ml-2 inline-flex items-center justify-center px-2 text-xs font-bold rounded-full bg-orange-500/20 text-orange-400">
+                {pendingConfessions.length}
               </span>
             )}
           </button>
@@ -168,6 +208,41 @@ export function AdminPanelClient({
                     <button
                       onClick={() => handleAction(user.id, "reject")}
                       disabled={isLoadingId === user.id}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-600/20 font-medium rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      <X className="w-4 h-4" /> Reject
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {activeTab === "confessions" && (
+          <div className="space-y-4">
+            {pendingConfessions.length === 0 ? (
+              <div className="text-center py-16 bg-zinc-900 border border-zinc-800 rounded-xl">
+                <p className="text-zinc-400 font-medium">No pending confessions</p>
+              </div>
+            ) : (
+              pendingConfessions.map((confession: ConfessionBasic) => (
+                <div key={confession.id} className="flex flex-col gap-4 p-5 bg-zinc-800 border border-zinc-700 rounded-xl hover:border-zinc-600 transition-colors">
+                  <div>
+                    <p className="text-white text-sm leading-relaxed whitespace-pre-wrap">{confession.content}</p>
+                    <p className="text-zinc-500 text-xs mt-3">Submitted {formatDate(confession.createdAt)}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleConfessionAction(confession.id, "approve")}
+                      disabled={isLoadingConfessionId === confession.id}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-green-600/10 hover:bg-green-600/20 text-green-500 border border-green-600/20 font-medium rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      <Check className="w-4 h-4" /> Approve
+                    </button>
+                    <button
+                      onClick={() => handleConfessionAction(confession.id, "reject")}
+                      disabled={isLoadingConfessionId === confession.id}
                       className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-600/20 font-medium rounded-lg transition-colors disabled:opacity-50"
                     >
                       <X className="w-4 h-4" /> Reject

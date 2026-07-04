@@ -15,23 +15,23 @@ export async function GET(req: Request) {
     const skip = parseInt(searchParams.get('skip') || '0');
     const take = parseInt(searchParams.get('take') || '20');
 
-    if (session.user.role === "ADMIN") {
+    if (session.user.role === "ADMIN" && searchParams.get("status") === "pending") {
       const pending = await prisma.confession.findMany({
         where: { isApproved: false, isRejected: false },
         orderBy: { createdAt: "asc" },
         include: { user: { select: { name: true, email: true } } }
       });
       return NextResponse.json(pending);
-    } else {
-      const approved = await prisma.confession.findMany({
-        where: { isApproved: true },
-        skip,
-        take,
-        orderBy: { createdAt: "desc" },
-        include: { reactions: true }
-      });
-      return NextResponse.json(approved);
     }
+
+    const approved = await prisma.confession.findMany({
+      where: { isApproved: true },
+      skip,
+      take,
+      orderBy: { createdAt: "desc" },
+      include: { reactions: true }
+    });
+    return NextResponse.json(approved);
   } catch {
     return NextResponse.json({ error: "Failed to fetch confessions" }, { status: 500 });
   }

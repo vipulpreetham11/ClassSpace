@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -18,27 +20,17 @@ import {
   ShieldCheck
 } from "lucide-react";
 
-type TabType = 'home' | 'notes' | 'confessions' | 'memes' | 'discussions' | 'notices' | 'students' | 'admin' | 'polls' | 'birthdays';
-
-interface SidebarProps {
-  activeTab: TabType;
-  onTabChange: (tab: TabType) => void;
-}
-
-interface SidebarLinkProps {
+interface NavLinkProps {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  tab: TabType;
-  activeTab: TabType;
-  onTabChange: (tab: TabType) => void;
+  href: string;
+  isActive: boolean;
 }
 
-function SidebarLink({ icon: Icon, label, tab, activeTab, onTabChange }: SidebarLinkProps) {
-  const isActive = activeTab === tab;
-
+function NavLink({ icon: Icon, label, href, isActive }: NavLinkProps) {
   return (
-    <button
-      onClick={() => onTabChange(tab)}
+    <Link
+      href={href}
       className={`
         w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors
         ${isActive
@@ -49,27 +41,33 @@ function SidebarLink({ icon: Icon, label, tab, activeTab, onTabChange }: Sidebar
     >
       <Icon className="w-5 h-5 shrink-0" />
       <span className="truncate">{label}</span>
-    </button>
+    </Link>
   );
 }
 
-export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+export function Sidebar() {
   const { data: session } = useSession();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
   const navLinks = [
-    { icon: Home, label: "Home", tab: "home" as TabType },
-    { icon: Bell, label: "Notices", tab: "notices" as TabType },
-    { icon: FileText, label: "Notes", tab: "notes" as TabType },
-    { icon: MessageSquare, label: "Discussions", tab: "discussions" as TabType },
-    { icon: Ghost, label: "Confessions", tab: "confessions" as TabType },
-    { icon: BarChart2, label: "Polls", tab: "polls" as TabType },
-    { icon: Smile, label: "Memes", tab: "memes" as TabType },
-    { icon: Cake, label: "Birthdays", tab: "birthdays" as TabType },
-    { icon: Users, label: "Students", tab: "students" as TabType },
+    { icon: Home, label: "Home", href: "/dashboard" },
+    { icon: Bell, label: "Notices", href: "/dashboard/notices" },
+    { icon: FileText, label: "Notes", href: "/dashboard/notes" },
+    { icon: MessageSquare, label: "Discussions", href: "/dashboard/discussions" },
+    { icon: Ghost, label: "Confessions", href: "/dashboard/confessions" },
+    { icon: BarChart2, label: "Polls", href: "/dashboard/polls" },
+    { icon: Smile, label: "Memes", href: "/dashboard/memes" },
+    { icon: Cake, label: "Birthdays", href: "/dashboard/birthdays" },
+    { icon: Users, label: "Students", href: "/dashboard/students" },
   ];
+
+  const isLinkActive = (href: string) => {
+    if (href === "/dashboard") return pathname === "/dashboard";
+    return pathname.startsWith(href);
+  };
 
   return (
     <>
@@ -93,22 +91,20 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           {navLinks.map((link) => (
-            <SidebarLink
-              key={link.tab}
+            <NavLink
+              key={link.href}
               icon={link.icon}
               label={link.label}
-              tab={link.tab}
-              activeTab={activeTab}
-              onTabChange={onTabChange}
+              href={link.href}
+              isActive={isLinkActive(link.href)}
             />
           ))}
           {session?.user?.role === "ADMIN" && (
-            <SidebarLink
+            <NavLink
               icon={ShieldCheck}
               label="Admin"
-              tab="admin"
-              activeTab={activeTab}
-              onTabChange={onTabChange}
+              href="/dashboard/admin"
+              isActive={isLinkActive("/dashboard/admin")}
             />
           )}
         </nav>
@@ -145,7 +141,6 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         </div>
       </aside>
 
-      {/* Mobile Backdrop */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 md:hidden"

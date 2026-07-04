@@ -24,6 +24,12 @@ export default async function AdminPage() {
     select: { id: true, name: true, email: true, image: true, role: true, isApproved: true, createdAt: true, rollNumber: true, branch: true, year: true }
   });
 
+  const pendingConfessions = await prisma.confession.findMany({
+    where: { isApproved: false, isRejected: false },
+    orderBy: { createdAt: 'asc' },
+    select: { id: true, content: true, createdAt: true },
+  });
+
   const stats = {
     totalStudents: students.length,
     pendingApprovals: pendingUsers.length,
@@ -31,5 +37,12 @@ export default async function AdminPage() {
     totalNotices: await prisma.notice.count(),
   };
 
-  return <AdminPanelClient initialPending={pendingUsers} initialStudents={students} stats={stats} />;
+  return (
+    <AdminPanelClient
+      initialPending={pendingUsers}
+      initialStudents={students}
+      initialPendingConfessions={pendingConfessions}
+      stats={stats}
+    />
+  );
 }
