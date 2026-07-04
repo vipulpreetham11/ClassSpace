@@ -6,7 +6,7 @@ import { NoteCard } from "@/components/notes/NoteCard";
 import Link from "next/link";
 import { Plus, FileX } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export default async function NotesPage() {
   const session = await getServerSession(authOptions);

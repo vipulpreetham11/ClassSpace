@@ -6,7 +6,7 @@ import { NoticeCard } from "@/components/notices/NoticeCard";
 import Link from "next/link";
 import { Plus, BellOff } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export default async function NoticesPage() {
   const session = await getServerSession(authOptions);

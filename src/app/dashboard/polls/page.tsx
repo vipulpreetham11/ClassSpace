@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Plus, BarChart2 } from "lucide-react";
 import { PollCardClient } from "./PollCardClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export default async function PollsPage() {
   const session = await getServerSession(authOptions);

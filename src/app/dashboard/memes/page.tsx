@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Plus, ImageOff } from "lucide-react";
 import { MemesPageClient } from "./MemesPageClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export default async function MemesPage() {
   const session = await getServerSession(authOptions);

@@ -1,0 +1,142 @@
+From 56cc2a9eb00a3779574e7760ccd104169bbbe17f Mon Sep 17 00:00:00 2001
+From: Vipul Preetham <vipulpreetham1@gmail.com>
+Date: Sat, 4 Jul 2026 08:14:31 +0000
+Subject: [PATCH] Fix nav speed: loading skeleton + revalidate cache on all
+ sub-pages
+
+---
+ src/app/dashboard/birthdays/page.tsx   |  2 +-
+ src/app/dashboard/confessions/page.tsx |  2 +-
+ src/app/dashboard/loading.tsx          | 38 ++++++++++++++++++++++++++
+ src/app/dashboard/memes/page.tsx       |  2 +-
+ src/app/dashboard/notes/page.tsx       |  2 +-
+ src/app/dashboard/notices/page.tsx     |  2 +-
+ src/app/dashboard/polls/page.tsx       |  2 +-
+ 7 files changed, 44 insertions(+), 6 deletions(-)
+ create mode 100644 src/app/dashboard/loading.tsx
+
+diff --git a/src/app/dashboard/birthdays/page.tsx b/src/app/dashboard/birthdays/page.tsx
+index 659b569..723f77a 100644
+--- a/src/app/dashboard/birthdays/page.tsx
++++ b/src/app/dashboard/birthdays/page.tsx
+@@ -6,7 +6,7 @@ import Link from "next/link";
+ import { Plus } from "lucide-react";
+ import { formatDate } from "@/lib/formatDate";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 30;
+ 
+ export default async function BirthdaysPage() {
+   const session = await getServerSession(authOptions);
+diff --git a/src/app/dashboard/confessions/page.tsx b/src/app/dashboard/confessions/page.tsx
+index a0b00e0..cdaef37 100644
+--- a/src/app/dashboard/confessions/page.tsx
++++ b/src/app/dashboard/confessions/page.tsx
+@@ -6,7 +6,7 @@ import Link from "next/link";
+ import { Plus, Ghost as GhostIcon, ShieldCheck } from "lucide-react";
+ import { ConfessionsPageClient } from "./ConfessionsPageClient";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 30;
+ 
+ export default async function ConfessionsPage() {
+   const session = await getServerSession(authOptions);
+diff --git a/src/app/dashboard/loading.tsx b/src/app/dashboard/loading.tsx
+new file mode 100644
+index 0000000..626d8e8
+--- /dev/null
++++ b/src/app/dashboard/loading.tsx
+@@ -0,0 +1,38 @@
++export default function DashboardLoading() {
++  return (
++    <div className="space-y-8 max-w-6xl animate-pulse">
++      {/* Header skeleton */}
++      <div className="space-y-2">
++        <div className="h-9 w-72 bg-zinc-800 rounded-lg" />
++        <div className="h-5 w-56 bg-zinc-800/60 rounded-lg" />
++      </div>
++
++      {/* Stat cards skeleton */}
++      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
++        {[...Array(4)].map((_, i) => (
++          <div key={i} className="bg-zinc-800 rounded-xl p-5 border border-zinc-700 flex items-center justify-between">
++            <div className="space-y-2">
++              <div className="h-4 w-24 bg-zinc-700 rounded" />
++              <div className="h-8 w-12 bg-zinc-700 rounded" />
++            </div>
++            <div className="w-12 h-12 bg-zinc-700 rounded-lg" />
++          </div>
++        ))}
++      </div>
++
++      {/* Activity skeleton */}
++      <div className="space-y-4">
++        <div className="h-6 w-36 bg-zinc-800 rounded-lg" />
++        {[...Array(4)].map((_, i) => (
++          <div key={i} className="flex items-start gap-3 bg-zinc-800 rounded-xl p-4 border border-zinc-700">
++            <div className="w-8 h-8 bg-zinc-700 rounded-lg shrink-0" />
++            <div className="flex-1 space-y-2">
++              <div className="h-4 bg-zinc-700 rounded w-3/4" />
++              <div className="h-3 bg-zinc-700/60 rounded w-24" />
++            </div>
++          </div>
++        ))}
++      </div>
++    </div>
++  );
++}
+diff --git a/src/app/dashboard/memes/page.tsx b/src/app/dashboard/memes/page.tsx
+index d501407..12daf2c 100644
+--- a/src/app/dashboard/memes/page.tsx
++++ b/src/app/dashboard/memes/page.tsx
+@@ -6,7 +6,7 @@ import Link from "next/link";
+ import { Plus, ImageOff } from "lucide-react";
+ import { MemesPageClient } from "./MemesPageClient";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 30;
+ 
+ export default async function MemesPage() {
+   const session = await getServerSession(authOptions);
+diff --git a/src/app/dashboard/notes/page.tsx b/src/app/dashboard/notes/page.tsx
+index 5541564..721f577 100644
+--- a/src/app/dashboard/notes/page.tsx
++++ b/src/app/dashboard/notes/page.tsx
+@@ -6,7 +6,7 @@ import { NoteCard } from "@/components/notes/NoteCard";
+ import Link from "next/link";
+ import { Plus, FileX } from "lucide-react";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 30;
+ 
+ export default async function NotesPage() {
+   const session = await getServerSession(authOptions);
+diff --git a/src/app/dashboard/notices/page.tsx b/src/app/dashboard/notices/page.tsx
+index cfaaf31..a3b74e8 100644
+--- a/src/app/dashboard/notices/page.tsx
++++ b/src/app/dashboard/notices/page.tsx
+@@ -6,7 +6,7 @@ import { NoticeCard } from "@/components/notices/NoticeCard";
+ import Link from "next/link";
+ import { Plus, BellOff } from "lucide-react";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 30;
+ 
+ export default async function NoticesPage() {
+   const session = await getServerSession(authOptions);
+diff --git a/src/app/dashboard/polls/page.tsx b/src/app/dashboard/polls/page.tsx
+index e02b2a6..2a9be4c 100644
+--- a/src/app/dashboard/polls/page.tsx
++++ b/src/app/dashboard/polls/page.tsx
+@@ -6,7 +6,7 @@ import Link from "next/link";
+ import { Plus, BarChart2 } from "lucide-react";
+ import { PollCardClient } from "./PollCardClient";
+ 
+-export const dynamic = "force-dynamic";
++export const revalidate = 30;
+ 
+ export default async function PollsPage() {
+   const session = await getServerSession(authOptions);
+-- 
+2.43.0
+

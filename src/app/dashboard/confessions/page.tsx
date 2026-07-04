@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Plus, Ghost as GhostIcon, ShieldCheck } from "lucide-react";
 import { ConfessionsPageClient } from "./ConfessionsPageClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export default async function ConfessionsPage() {
   const session = await getServerSession(authOptions);

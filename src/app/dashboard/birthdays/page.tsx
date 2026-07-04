@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { formatDate } from "@/lib/formatDate";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export default async function BirthdaysPage() {
   const session = await getServerSession(authOptions);
